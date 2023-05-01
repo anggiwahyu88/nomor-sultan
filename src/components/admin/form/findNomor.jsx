@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {faMagnifyingGlass} from "@fortawesome/free-solid-svg-icons"
-import { useContext } from "react";
 import { ItemContext } from "../../../utils/provider";
+import { useContext } from "react";
 
 export default function FindNomor() {
   const { findNomor, setOnFindNomor, setNomor } = useContext(ItemContext);

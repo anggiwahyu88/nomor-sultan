@@ -1,3 +1,5 @@
+import { useQuery, QueryClient } from "react-query";
+import { dehydrate } from "react-query/hydration";
 import axios from "axios";
 import dynamic from "next/dynamic";
 const Navbar = dynamic(() => import("../../src/components/navbar"), {
@@ -10,7 +12,22 @@ const Product = dynamic(() => import("../../src/components/product"), {
   ssr: false,
 });
 
-export default function oprator({ products, oprator }) {
+const getProduct = async (oprator) => {
+  const response = await axios.get(
+    `http://localhost:3000/api/product/oprator/${oprator}`
+  );
+  const data = response.data.products;
+  return data;
+};
+
+export default function Oprator({ oprator }) {
+  const { data } = useQuery(
+    `products-oprator-${oprator}`,
+    () => getProduct(oprator),
+    {
+      refetchInterval: 20000,
+    }
+  );
   return (
     <>
       <Navbar />
@@ -18,7 +35,7 @@ export default function oprator({ products, oprator }) {
         <div className="mt-[2vmax] bg-white h-[5.5vmax] flex text-[2.6vmax] border-b">
           <h1 className="m-auto uppercase">{oprator}</h1>
         </div>
-        <Product data={products} />
+        <Product data={data} />
       </main>
       <Footer />
     </>
@@ -48,20 +65,19 @@ export async function getStaticPaths() {
 
 export async function getStaticProps(contex) {
   const oprator = contex?.params?.oprator || null;
-  let products;
   try {
-    const response = await axios.get(
-      `http://localhost:3000/api/product/oprator/${oprator}`
+    const queryClient = new QueryClient();
+    await queryClient.prefetchQuery(`products-oprator-${oprator}`, () =>
+      getProduct(oprator)
     );
-    products = response.data.product;
+    const dehydratedState = { dehydratedState: dehydrate(queryClient) };
     return {
-      props: { products, oprator },
-      revalidate: 60,
+      props: {
+        dehydratedState,
+        oprator,
+      },
     };
-  } catch {
-    return {
-      props: { products, oprator },
-      revalidate: 60,
-    };
+  } catch (err) {
+    console.error(err);
   }
 }

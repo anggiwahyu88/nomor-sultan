@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext } from "react";
 import { ItemContext } from "../../../utils/provider";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
@@ -11,30 +11,21 @@ import FormOprator from "../../list-form/form-input-oprator";
 import FormHarga from "../../list-form/form-input-harga";
 import FormNomor from "../../list-form/form-input-nomor";
 import schemaAdmind from "../../../utils/schema-admind";
-import io from "socket.io-client";
 
 export default function Uplaod({ token }) {
   const { handleFormUpload } = useContext(ItemContext);
   const { axiosJWT } = useContext(ItemContext);
-  const [socket, setSocet] = useState();
   const { setLoading } = useContext(ItemContext);
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schemaAdmind),
   });
 
-  useEffect(() => {
-    // setSocet(
-    //   io({
-    //     pingInterval: 20000,
-    //     pingTimeout: 10000,
-    //   })
-    // );
-  }, []);
   const handleUpload = async (data) => {
     setLoading(true);
     try {
@@ -56,7 +47,6 @@ export default function Uplaod({ token }) {
           },
         }
       );
-      // socket.emit("product-update", new Date().getTime());
       toast.success("upload sucses");
     } catch (err) {
       toast.error(err.response.data.error_message);
@@ -71,9 +61,9 @@ export default function Uplaod({ token }) {
       <form className="card-form " onSubmit={handleSubmit(handleUpload)}>
         <FormNomor defaultValue={"08"} register={register} errors={errors} />
         <FormHarga register={register} errors={errors} />
-        <FormOprator register={register} errors={errors} />
-        <FormKategori register={register} errors={errors} />
-        <FormJenisProduk register={register} errors={errors} />
+        <FormOprator register={register} errors={errors} setValue={setValue}/>
+        <FormKategori register={register} errors={errors} setValue={setValue}/>
+        <FormJenisProduk register={register} errors={errors} setValue={setValue}/>
         <FormAsMaduraTarifLama register={register} errors={errors} />
         <FormAsPlayMania register={register} errors={errors} />
         <div className="wrapper-btn-form">

@@ -1,30 +1,9 @@
 import { ItemContext } from "../../utils/provider";
 import { useContext } from "react";
-import { useRouter } from "next/router";
-import { toast } from "react-toastify";
 
-export default function Admin({ username, token }) {
+export default function Admin({ logout }) {
   const { setOnFindNomor } = useContext(ItemContext);
   const { handleFormUpload } = useContext(ItemContext);
-  const { axiosJWT } = useContext(ItemContext);
-  const router = useRouter();
-
-  const logout = async () => {
-    try {
-      await axiosJWT.post(
-        `/api/users/logout/${username}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      router.push("/");
-    } catch {
-      toast.error("logout gagal");
-    }
-  };
 
   return (
     <div className="">

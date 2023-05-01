@@ -1,23 +1,21 @@
-import { useContext, useState, useEffect } from "react";
 import { rupiahConvert } from "../../../utils/rupiahConvert";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { ItemContext } from "../../../utils/provider";
+import { useContext } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import FormAsMaduraTarifLama from "../../list-form/form-input-as-madura-tarif-lama";
 import FormJenisProduk from "../../list-form/form-input-jenis-produk";
 import FormAsPlayMania from "../../list-form/form-input-as-play-mania";
 import FormKategori from "../../list-form/form-input-kategori";
+import schemaAdmind from "../../../utils/schema-admind";
 import FormOprator from "../../list-form/form-input-oprator";
 import FormHarga from "../../list-form/form-input-harga";
 import FormNomor from "../../list-form/form-input-nomor";
-import schemaAdmind from "../../../utils/schema-admind";
-import io from "socket.io-client";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
 
 export default function Update({ data, token }) {
   const { handleFormUpdate } = useContext(ItemContext);
   const { axiosJWT } = useContext(ItemContext);
-  const [socket, setSocet] = useState();
   const { setLoading } = useContext(ItemContext);
 
   const {
@@ -36,15 +34,6 @@ export default function Update({ data, token }) {
       asPlayMania: data.asPlayMania,
     }
   });
-  useEffect(() => {
-
-    // setSocet(
-    //   io({
-    //     pingInterval: 20000,
-    //     pingTimeout: 10000,
-    //   })
-    // );
-  }, []);
 
   const handleUpdate = async (dataInput) => {
     setLoading(true);
@@ -68,7 +57,6 @@ export default function Update({ data, token }) {
         }
       );
       toast.success("update sucses");
-      // socket.emit("product-update", new Date().getTime());
     } catch (err) {
       toast.error(err?.response?.data?.error_message || "something wrong");
     } finally {
@@ -86,7 +74,6 @@ export default function Update({ data, token }) {
         },
       });
       toast.success("delete sucses");
-      // socket.emit("product-update", new Date().getTime());
     } catch {
       toast.error("gagal, coba lagi");
     } finally {

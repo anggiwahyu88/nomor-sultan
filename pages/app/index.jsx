@@ -2,12 +2,13 @@ import { useState, useContext, useEffect } from "react";
 import { checkRefreshToken } from "../../src/utils/check-refresh-token";
 import { checkAccessToken } from "../../src/utils/check-access-token";
 import { ToastContainer } from "react-toastify";
+import { useQueryClient } from "react-query";
 import { ItemContext } from "../../src/utils/provider";
+import { useQuery } from "react-query";
 import { toast } from "react-toastify";
 import jwt_decode from "jwt-decode";
 import dynamic from "next/dynamic";
 import axios from "axios";
-import io from "socket.io-client";
 import "react-toastify/dist/ReactToastify.css";
 
 const Admin = dynamic(() => import("../../src/components/admin"), {
@@ -29,7 +30,37 @@ const Login = dynamic(() => import("../../src/components/login"), {
   ssr: false,
 });
 
-export default function Home({ form, decoded, refreshToken, accessToken }) {
+const getValidateUsers = async (token) => {
+  let isValid;
+  try {
+    isValid = await axios.get(
+      "http://localhost:3000/api/users/check-user-validate",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    return isValid.data.isValid;
+  } catch (err) {
+    isValid = false;
+    return isValid;
+  }
+};
+
+export default function Home({
+  form,
+  decoded,
+  refreshToken,
+  accessToken,
+  isValid,
+}) {
+  if (form === "login") {
+    return (
+      <div className="h-screen bg-gray-100">
+        <Login useQueryClient={useQueryClient} />
+      </div>
+    );
+  }
+
   const [onFormUpdate, SetOnFormUpdate] = useState(false);
   const [onFormUpload, SetOnFormUpload] = useState(false);
   const [nomorValidate, setNomorValidate] = useState(false);
@@ -41,39 +72,32 @@ export default function Home({ form, decoded, refreshToken, accessToken }) {
 
   const axiosJWT = axios.create({});
 
+  const UserLogout = async () => {
+    await axios.post(
+      `/api/users/logout/${decoded.username}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
+      }
+    );
+    window.location.replace("/");
+  };
+
+  const { data } = useQuery(
+    "validate-user",
+    () => getValidateUsers(refreshToken),
+    {
+      initialData: isValid,
+      refetchOnMount: true,
+    }
+  );
   useEffect(() => {
-    // const checkUserValidate = async () => {
-    //   try {
-    //     await axios.get("/api/users/check-user-validate", {
-    //       headers: {
-    //         Authorization: `Bearer ${refreshToken}`,
-    //       },
-    //     });
-    //     window.location.reload();
-    //   } catch (err) {
-    //     console.error(err);
-    //   }
-    // };
-    // checkUserValidate();
-    // const socket = io({
-    //   pingInterval: 20000,
-    //   pingTimeout: 10000,
-    // });
-    // socket.on("user-update", async (data) => {
-    //   try {
-    //     await axios.get("/api/users/check-user-validate", {
-    //       headers: { Authorization: `Bearer ${refreshToken}` },
-    //     });
-    //     window.location.reload();
-    //   } catch (err) {
-    //     console.error(err);
-    //   }
-    // });
-    // const socketInitializer = async () => {
-    //   await fetch("/api/socket");
-    // };
-    // socketInitializer();
-  }, []);
+    if (!data) {
+      UserLogout();
+    }
+  }, [data]);
 
   axiosJWT.interceptors.request.use(
     async (config) => {
@@ -120,14 +144,6 @@ export default function Home({ form, decoded, refreshToken, accessToken }) {
     }
   };
 
-  if (form === "login") {
-    return (
-      <div className="h-screen bg-gray-100">
-        <Login />
-      </div>
-    );
-  }
-
   return (
     <ItemContext.Provider
       value={{
@@ -148,7 +164,7 @@ export default function Home({ form, decoded, refreshToken, accessToken }) {
       ) : (
         ""
       )}
-      <Admin token={onAccessToken} username={decoded.username} />
+      <Admin logout={UserLogout} />
     </ItemContext.Provider>
   );
 }
@@ -183,6 +199,12 @@ export async function getServerSideProps(contex) {
     };
   }
 
+  const isValid = await getValidateUsers(refreshToken, decoded.username);
+  if (!isValid)
+    return {
+      notFound: true,
+    };
+
   if (validateRefreshToken && !validateAccessToken) {
     const token = await axios.get("http://localhost:3000/api/users/get-token", {
       headers: {
@@ -195,10 +217,10 @@ export async function getServerSideProps(contex) {
     );
     decoded = jwt_decode(token.data.token);
     return {
-      props: { decoded, refreshToken, accessToken },
+      props: { decoded, refreshToken, accessToken: token.data.token, isValid },
     };
   }
   return {
-    props: { decoded, refreshToken, accessToken },
+    props: { decoded, refreshToken, accessToken, isValid },
   };
 }

@@ -1,4 +1,3 @@
-import { checkAccessToken } from "../../../../src/utils/check-access-token";
 import cookie from "cookie";
 import Users from "../../../../src/db/users";
 
@@ -6,12 +5,18 @@ export default async function logout(req, res) {
   switch (req.method) {
     case "POST":
       try {
-        await Users.update(
-          {
-            token: null,
-          },
-          { where: { username: req.query.username } }
-        );
+        const refreshToken = req?.headers?.authorization?.split(" ")[1] || null;
+        const tokenIsValid = await Users.findAll({
+          where: { token: refreshToken },
+        });
+        if (tokenIsValid[0]) {
+          await Users.update(
+            {
+              token: null,
+            },
+            { where: { username: req.query.username } }
+          );
+        }
 
         res.setHeader("Set-Cookie", [
           cookie.serialize("access_token", "", {
@@ -26,7 +31,6 @@ export default async function logout(req, res) {
           }),
         ]);
         res.status(200).json({ message: "succses" });
-        
       } catch (err) {
         throw err;
       }

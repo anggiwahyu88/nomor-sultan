@@ -1,32 +1,23 @@
 import { checkRefreshToken } from "../../../src/utils/check-refresh-token";
-import tokenLastLogin from "../../../src/utils/tokenLastLogin";
-import cookie from "cookie";
+import Users from "../../../src/db/users";
 
 export default async function checkToken(req, res) {
   try {
     const refreshToken = req?.headers?.authorization?.split(" ")[1] || null;
     const validate = await checkRefreshToken(refreshToken);
-    if (!validate) return res.status(401).end();
+    if (!validate)
+      return res.status(401).json({
+        isValid: false,
+      });
 
-    while (tokenLastLogin[0] === refreshToken || tokenLastLogin.length === 0) {
-      console.log(new Date().getTime(), tokenLastLogin);
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-    }
-    console.log("sucsses=>", refreshToken)
-
-    res.setHeader("Set-Cookie", [
-      cookie.serialize("access_token", "", {
-        maxAge: new Date(0),
-        httpOnly: true,
-        path: "/app",
-      }),
-      cookie.serialize("refresh_token", "", {
-        maxAge: new Date(0),
-        httpOnly: true,
-        path: "/app",
-      }),
-    ]);
-    res.status(200).json({ message: "succses" });
+    const users = await Users.findAll({ where: { token: refreshToken } });
+    if (!users[0])
+      return res.status(401).json({
+        isValid: false,
+      });
+    res.status(200).json({
+      isValid: true,
+    });
   } catch (err) {
     throw err;
   }
