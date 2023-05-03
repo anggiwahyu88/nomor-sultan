@@ -14,7 +14,7 @@ export default async function logout(req, res) {
             {
               token: null,
             },
-            { where: { username: req.query.username } }
+            { where: { _id: req.query.id } }
           );
         }
 

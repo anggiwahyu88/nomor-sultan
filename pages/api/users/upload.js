@@ -52,16 +52,19 @@ export default async function upload(req, res) {
         );
         const onNomor = cekNomor(nomor);
         if (onNomor && validate) {
-          await Product.create({
-            nomor,
-            oprator,
-            kategori,
-            digit: String(nomor.length),
-            jenisProduk,
-            harga,
-            asMaduraTarifLama,
-            asPlayMania,
-          });
+          await Product.create(
+            {
+              nomor,
+              oprator,
+              kategori,
+              digit: String(nomor.length),
+              jenisProduk,
+              harga,
+              asMaduraTarifLama,
+              asPlayMania,
+            },
+            { individualHooks: true }
+          );
           res.status(200).json({
             message: "succes",
           });

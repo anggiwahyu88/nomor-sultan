@@ -74,7 +74,7 @@ export default function Home({
 
   const UserLogout = async () => {
     await axios.post(
-      `/api/users/logout/${decoded.username}`,
+      `/api/users/logout/${decoded.id}`,
       {},
       {
         headers: {
@@ -199,7 +199,7 @@ export async function getServerSideProps(contex) {
     };
   }
 
-  const isValid = await getValidateUsers(refreshToken, decoded.username);
+  const isValid = await getValidateUsers(refreshToken);
   if (!isValid)
     return {
       notFound: true,

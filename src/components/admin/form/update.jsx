@@ -40,9 +40,9 @@ export default function Update({ data, token }) {
     try {
       const newPrice = dataInput.harga.replace(/[^0-9]/g, "");
       await axiosJWT.put(
-        `/api/users/update?nomor=${data.nomor}`,
+        `/api/users/update?id=${data._id}`,
         {
-          nomorBaru: dataInput.nomor,
+          nomor: dataInput.nomor,
           oprator: dataInput.oprator,
           kategori: dataInput.kategori,
           jenisProduk: dataInput.jenisProduk,
@@ -68,7 +68,7 @@ export default function Update({ data, token }) {
   const handleDelete = async () => {
     setLoading(true);
     try {
-      await axiosJWT.delete(`/api/users/delete/${data.nomor}`, {
+      await axiosJWT.delete(`/api/users/delete/${data._id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

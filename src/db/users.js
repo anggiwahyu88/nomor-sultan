@@ -5,6 +5,10 @@ class Users extends Model {}
 
 Users.init(
   {
+    _id: {
+      type: DataTypes.STRING,
+      unique: true,
+    },
     username: {
       type: DataTypes.STRING,
       unique: true,

@@ -1,12 +1,12 @@
 import { errRes } from "../../src/utils/err";
-const bcrypt = require("bcrypt");
+import { hash } from "../../src/utils/hash";
 import Users from "../../src/db/users";
 
 export default async function signin(req, res) {
   if (req.method == "POST") {
     const { username, password } = req.body;
     try {
-      const encryptedPassword = await bcrypt.hash(password, 10);
+      const encryptedPassword = hash(password);
       const users = await Users.create({
         username,
         password: encryptedPassword,
@@ -23,6 +23,6 @@ export default async function signin(req, res) {
       errRes(400, res, { err });
     }
   } else {
-    res.status(404).end()
+    res.status(404).end();
   }
 }

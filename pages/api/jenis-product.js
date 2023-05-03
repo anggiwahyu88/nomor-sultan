@@ -1,7 +1,7 @@
+const { Op } = require("sequelize");
 const sequelize = require("../../src/db/db");
 import { errRes } from "../../src/utils/err";
 import Product from "../../src/db/product";
-const { Op } = require("sequelize");
 
 export default async function product(req, res) {
   switch (req.method) {

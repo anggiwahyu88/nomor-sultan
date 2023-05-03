@@ -12,13 +12,13 @@ export default async function remove(req, res) {
 
         const product = await Product.destroy({
           where: {
-            nomor: req.query.nomor,
+            _id: req.query.id,
           },
           force: true,
         });
         if (product == 0) return errRes(400, res, "data not found");
-        
-        res.status(200).json({
+
+        res.statusF(200).json({
           message: "succsses",
         });
       } catch (err) {
