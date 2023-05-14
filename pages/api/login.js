@@ -1,8 +1,8 @@
-const bcrypt = require("bcrypt");
 import { generateToken } from "../../src/utils/generateToken";
 import { errRes } from "../../src/utils/err";
 import cookie from "cookie";
 import Users from "../../src/db/users";
+import { hash } from "../../src/utils/hash";
 
 function userValidation(data) {
   if (!data.username || !data.password) {
@@ -20,22 +20,18 @@ export default async function login(req, res) {
         const validate = userValidation(req.body);
         if (validate) {
           const user = await Users.findOne({ where: { username: username } });
+
           if (!user) return errRes(400, res, "data not found");
-
-          const compare = bcrypt.compareSync(password, user?.password || null);
-          if (!compare) return errRes(400, res, "data not found");
-
-          const accessToken = generateToken(
-            { username: username },
-            "accessToken"
-          );
+          const compare = hash(password);
+          if (compare !== user.password) return errRes(400, res, "data not found");
+          const accessToken = generateToken({ id: user._id }, "accessToken");
           const refreshToken = generateToken(
-            { username: username, role: "admind" },
+            { id: user._id, role: "admind" },
             "refreshToken"
           );
           const isUserUpdate = await Users.update(
             { token: refreshToken },
-            { where: { username: username }, individualHooks: true }
+            { where: { _id: user._id } }
           );
           if (isUserUpdate[0] === 0) throw Error;
 
@@ -56,6 +52,7 @@ export default async function login(req, res) {
           throw Error;
         }
       } catch (err) {
+        console.log(err);
         return errRes(400, res, "something wrong");
       }
     default:

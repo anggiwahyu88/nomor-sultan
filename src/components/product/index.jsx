@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
 import { rupiahConvert } from "../../../src/utils/rupiahConvert";
 import dynamic from "next/dynamic";
-import ProductSkeleton from "./skeleton";
+import Card from "../card";
 
-// import Card from "../card";
-
-const Card = dynamic(() => import("../card"), {
-  ssr: false,
-  loading: () => <ProductSkeleton />,
-});
 const NotFound = dynamic(() => import("../notFound"), {
   ssr: false,
 });

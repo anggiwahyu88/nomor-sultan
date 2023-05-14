@@ -5,16 +5,16 @@ export default async function oprator(req, res) {
   switch (req.method) {
     case "GET":
       try {
-        const product = await Product.findAll({
+        const products = await Product.findAll({
           where: {
             oprator: req.query.oprator,
           },
           attributes: ["nomor", "oprator", "harga"],
         });
-        if (!product[0]) return errRes(400, res, "data not font");
+        if (!products[0]) return errRes(400, res, "data not font");
 
         res.status(200).json({
-          product,
+          products,
         });
       } catch (err) {
         throw err;

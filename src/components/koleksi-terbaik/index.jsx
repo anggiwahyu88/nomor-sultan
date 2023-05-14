@@ -3,24 +3,25 @@ import { SwiperSlide, Swiper } from "swiper/react";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { rupiahConvert } from "../../../src/utils/rupiahConvert";
-import axios from "axios";
+import { useQuery } from "react-query";
 import Link from "next/link";
+import SkeletonKoleksi from "./skeleton-koleksi";
+import Card from "../card";
 import "swiper/css";
-import dynamic from "next/dynamic";
-import SkeletonKoleksi from "./skeleton-koleksi"
-import Card from "../card"
 
-// const Card = dynamic(() => import("../card"), {
-//   ssr: false,
-//   loading: () => <CaradSkeleton />,
-// });
-
-export default function KoleksiTerbaik({ title, slide }) {
-  const [data, setData] = useState();
+export default function KoleksiTerbaik({ title, slide, getProductKoleksi }) {
   const [my_swiper, set_my_swiper] = useState({});
   const [isEnd, setIsEnd] = useState(false);
   const [isBeginning, setIsBeginning] = useState(true);
   const [onSwiper, setOnSwiper] = useState(true);
+
+  const { data } = useQuery(
+    `products-koleksi-${title}`,
+    () => getProductKoleksi(title),
+    {
+      refetchInterval: 20000,
+    }
+  );
 
   const handleNextSlide = () => {
     my_swiper.slideTo(+slide);
@@ -31,18 +32,11 @@ export default function KoleksiTerbaik({ title, slide }) {
   };
 
   useEffect(() => {
-    const handleProduct = async () => {
-      const response = await axios.get(`/api/product/jenis-product/${title}`);
-      setData(response.data.products);
-    };
-    handleProduct();
-  }, [title]);
-  useEffect(() => {
     setIsEnd(my_swiper.isEnd);
     setIsBeginning(my_swiper.isBeginning);
   }, [my_swiper.isEnd, my_swiper.isBeginning]);
 
-  if(!slide) return <SkeletonKoleksi/>
+  if (!slide) return <SkeletonKoleksi />;
 
   return (
     <>
@@ -81,7 +75,7 @@ export default function KoleksiTerbaik({ title, slide }) {
                 const price = rupiahConvert(products.harga);
                 return (
                   <SwiperSlide key={i}>
-                    <Card data={products} price={price}/>
+                    <Card data={products} price={price} />
                   </SwiperSlide>
                 );
               })}

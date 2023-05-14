@@ -1,34 +1,27 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext } from "react";
 import { ItemContext } from "../../utils/provider";
 import axios from "axios";
 import Link from "next/link";
-import io from "socket.io-client";
+import { useForm } from "react-hook-form";
 
-export default function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+export default function Login({useQueryClient}) {
   const [errMessage, setErrMessage] = useState("");
-  const [socket, setSocet] = useState()
   const { setLoading } = useContext(ItemContext);
+  const queryClient = useQueryClient();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
-  useEffect(() => {
-    setSocet(
-      io({
-        pingInterval: 20000,
-        pingTimeout: 10000,
-      })
-    );
-  }, []);
-
-  const userLogin = async (event) => {
-    event.preventDefault();
+  const userLogin = async (data) => {
     setLoading(true);
     try {
       await axios.post("/api/login", {
-        username: username,
-        password: password,
+        username: data.username,
+        password: data.password,
       });
-      socket.emit("user-update", new Date().getTime());
+      await queryClient.invalidateQueries("validate-user");
       window.location.replace("/app");
     } catch {
       setErrMessage("user tidak ditemukan");
@@ -38,26 +31,27 @@ export default function Login() {
 
   return (
     <div className="container-form">
-      <form className="card-form">
+      <form className="card-form" onSubmit={handleSubmit(userLogin)}>
         <div className="flex w-full mt-[.6vmax]">
           <h1 className="font-bold mx-auto text-[2.7vmax]">LOGIN PAGE</h1>
         </div>
         <label className="label-form">USERNAME</label>
         <input
+          {...register("username", { required: "form tidak boleh kosong" })}
           className="input-text"
-          required
           type="text"
           placeholder="masukan username"
-          onChange={(event) => setUsername(event.target.value)}
         />
+
+        {errors.username && <span>{errors.username.message}</span>}
         <label className="label-form">PASSWORD</label>
         <input
+          {...register("password", { required: "form tidak boleh kosong " })}
           className="input-text"
-          required
           type="password"
           placeholder="masukan password"
-          onChange={(event) => setPassword(event.target.value)}
         />
+        {errors.password && <span>{errors.password.message}</span>}
         {errMessage && (
           <div className="w-full flex mt-[.7vmax]">
             <p className="mx-auto text-red-600 text-[1.4vmax]">
@@ -69,7 +63,6 @@ export default function Login() {
         <button
           className={`btn-login ${errMessage ? "mt-[1vmax]" : "mt-[2vmax]"}`}
           type="submit"
-          onClick={(event) => userLogin(event)}
         >
           Login
         </button>

@@ -1,11 +1,14 @@
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("./db");
-import tokenLastLogin from "../utils/tokenLastLogin";
 
 class Users extends Model {}
 
 Users.init(
   {
+    _id: {
+      type: DataTypes.STRING,
+      unique: true,
+    },
     username: {
       type: DataTypes.STRING,
       unique: true,
@@ -23,10 +26,5 @@ Users.init(
     modelName: "users",
   }
 );
-
-Users.afterUpdate((users, options) => {
-  tokenLastLogin[0] = users.token;
-  console.log(tokenLastLogin);
-});
 
 export default Users;

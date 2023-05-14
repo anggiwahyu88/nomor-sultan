@@ -4,8 +4,8 @@ import { errRes } from "../../../src/utils/err";
 import Product from "../../../src/db/product";
 
 function updateValidation(
+  id,
   nomor,
-  nomorBaru,
   oprator,
   kategori,
   jenisProduk,
@@ -14,8 +14,8 @@ function updateValidation(
   asPlayMania
 ) {
   if (
+    !id ||
     !nomor ||
-    !nomorBaru ||
     !oprator ||
     !kategori ||
     !jenisProduk ||
@@ -32,7 +32,7 @@ export default async function logout(req, res) {
     case "PUT":
       try {
         const {
-          nomorBaru,
+          nomor,
           oprator,
           kategori,
           jenisProduk,
@@ -41,15 +41,15 @@ export default async function logout(req, res) {
           asPlayMania,
         } = req.body;
         const accesstoken = req?.headers?.authorization?.split(" ")[1] || null;
-        const { nomor } = req.query;
+        const { id } = req.query;
 
         const tokenValidate = await checkAccessToken(accesstoken);
         if (!tokenValidate) return res.status(401).end();
         
-        const nomorValidate = cekNomor(nomorBaru);
+        const nomorValidate = cekNomor(nomor);
         const formValidate = updateValidation(
+          id,
           nomor,
-          nomorBaru,
           oprator,
           kategori,
           jenisProduk,
@@ -61,16 +61,16 @@ export default async function logout(req, res) {
         if (nomorValidate && formValidate) {
           const product = await Product.update(
             {
-              nomor: nomorBaru,
+              nomor: nomor,
               oprator: oprator,
               kategori: kategori,
-              digit: String(nomorBaru.length),
+              digit: String(nomor.length),
               jenisProduk: jenisProduk,
               harga: harga,
               asMaduraTarifLama: asMaduraTarifLama,
               asPlayMania: asPlayMania,
             },
-            { where: { nomor: nomor } }
+            { where: { _id: id } }
           );
           if (product[0] === 0) return errRes(400, res, "nomor not found");
           res.status(200).json({ message: "succses" });

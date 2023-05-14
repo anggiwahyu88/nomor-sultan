@@ -1,10 +1,15 @@
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("./db");
+import { hash } from "../utils/hash";
 
 class Product extends Model {}
 
 Product.init(
   {
+    _id: {
+      type: DataTypes.STRING,
+      unique: true,
+    },
     nomor: {
       type: DataTypes.STRING,
       unique: true,
@@ -174,5 +179,12 @@ Product.init(
     modelName: "product",
   }
 );
+
+Product.afterCreate(async (product) => {
+  await Product.update(
+    { _id: hash(product.id) },
+    { where: { id: product.id } }
+  );
+});
 
 export default Product;

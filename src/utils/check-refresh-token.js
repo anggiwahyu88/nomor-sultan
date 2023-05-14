@@ -6,7 +6,7 @@ export async function checkRefreshToken(refreshToken) {
     const validate = jwt.verify(refreshToken, KeyRefreshToken);
     const currentDate = new Date();
     if (validate.exp * 1000 <= currentDate.getTime()) return false;
-    return validate.username;
+    return validate.id;
   } catch {
     return false;
   }

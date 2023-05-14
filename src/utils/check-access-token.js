@@ -8,7 +8,7 @@ export async function checkAccessToken(accessToken) {
     const currentDate = new Date();
     if (validate.exp * 1000 <= currentDate.getTime()) return false;
     return {
-      username: validate.username,
+      id: validate.id,
       exp: validate.exp,
     };
   } catch {
